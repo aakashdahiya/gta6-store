@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Store Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f4f6;--card:#fff;--line:#ece3ec;--text:#17111c;--muted:#7d6f87;--pink:#ff3d9a;--orange:#ff9a3d;--teal:#14b8a6;--red:#e03131;
+  --sunset:linear-gradient(135deg,var(--pink),var(--orange));--ease:cubic-bezier(.22,1,.36,1);--shadow:0 10px 40px -14px rgba(60,20,70,.2)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:14px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.side{background:var(--text);color:#fff;padding:24px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.logo{font-family:Anton,sans-serif;font-size:24px;text-transform:uppercase;background:var(--sunset);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 10px}
+.side small{color:#a99bb3;padding:0 10px 18px;font-size:12px;letter-spacing:.1em}
+.side nav button{display:flex;align-items:center;gap:10px;width:100%;padding:12px 12px;border-radius:12px;color:#cfc4d6;font-weight:600;transition:background .3s,color .3s}
+.side nav button:hover{background:#ffffff12;color:#fff}
+.side nav button.on{background:#fff;color:var(--text)}
+.side .grow{flex:1}
+.side .store{padding:12px;border:1px solid #ffffff26;border-radius:12px;text-align:center;font-weight:600}
+main{padding:28px 32px 60px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.top h1{font-family:Anton,sans-serif;font-size:40px;text-transform:uppercase;letter-spacing:.02em}
+.btn{padding:12px 20px;border-radius:999px;background:var(--text);color:#fff;font-weight:700;transition:transform .3s var(--ease),background .3s}
+.btn:hover{transform:translateY(-1px)}
+.btn.grad{background:var(--sunset)}
+.btn.ghost{background:#fff;color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:var(--red)}
+.view{animation:in .5s var(--ease)}
+@keyframes in{from{opacity:0;transform:translateY(12px)}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.stat small{color:var(--muted);font-weight:600}
+.stat b{display:block;font-size:26px;margin-top:6px}
+.stat.warn b{color:var(--orange)}
+.toolbar{display:flex;gap:10px;margin-bottom:14px}
+.field,.toolbar input{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:border-color .2s,box-shadow .2s}
+.field:focus,.toolbar input:focus{outline:0;border-color:var(--text);box-shadow:0 0 0 3px #17111c14}
+.toolbar input{max-width:340px}
+.table{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.tr{display:grid;grid-template-columns:64px 1.6fr 1fr 1fr 1fr 60px auto;gap:16px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);transition:background .2s}
+.tr:first-child{border-top:0}
+.tr:hover{background:#fcfafc}
+.tr.head{background:#faf7fa;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.tr.off{opacity:.55}
+.thumb{width:64px;height:64px;border-radius:12px;display:grid;place-items:center;overflow:hidden}
+.thumb svg{width:82%}.thumb img{width:100%;height:100%;object-fit:cover}
+.tr small{display:block;color:var(--muted);margin-top:2px}
+.dots{display:flex;gap:4px;flex-wrap:wrap}
+.dots i{width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+s{color:var(--muted);margin-left:6px;font-size:12px}
+.low{color:var(--orange);font-weight:700}.out{color:var(--red);font-weight:700}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+.acts button{padding:8px 12px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:13px;transition:all .2s}
+.acts button:hover{border-color:var(--text)}
+.acts .del:hover{background:var(--red);border-color:var(--red);color:#fff}
+.switch{position:relative;display:inline-block;width:42px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#ddd3e0;border-radius:999px;transition:background .3s;cursor:pointer}
+.switch span::after{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .35s var(--ease)}
+.switch input:checked+span{background:var(--teal)}
+.switch input:checked+span::after{transform:translateX(18px)}
+.empty{padding:50px;text-align:center;color:var(--muted)}
+
+/* offers */
+.offers{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.offer{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .3s,transform .3s var(--ease)}
+.offer:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.offer h3{font-size:16px}
+.offer .meta{color:var(--muted);font-size:13px;line-height:1.5}
+.code{font-family:ui-monospace,monospace;font-weight:700;background:#fff0f7;color:var(--pink);padding:3px 8px;border-radius:6px}
+.st{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:999px;text-transform:uppercase}
+.st.live{background:#d9f7f3;color:#0b7a6e}.st.scheduled{background:#fff1dd;color:#b25e00}.st.expired{background:#f1e9f1;color:var(--muted)}.st.off{background:#f1e9f1;color:var(--muted)}
+.offer .row{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:8px}
+
+/* orders */
+.otr{display:grid;grid-template-columns:110px 150px 1fr 110px 110px;gap:16px;padding:14px 16px;border-top:1px solid var(--line);align-items:center}
+.otr:first-child{border-top:0}
+
+/* settings */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:640px;margin-bottom:18px}
+.panel h3{margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px}
+label.f em{font-style:normal;font-weight:400;color:var(--muted);font-size:12px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;pointer-events:none}
+.modal .ov{position:absolute;inset:0;background:rgba(23,17,28,.35);backdrop-filter:blur(3px);opacity:0;transition:opacity .4s}
+.modal .sheet{position:absolute;top:10px;right:10px;bottom:10px;width:min(560px,calc(100% - 20px));background:#fff;border-radius:24px;box-shadow:0 30px 80px -20px #17111c66;transform:translateX(110%);transition:transform .6s var(--ease);display:flex;flex-direction:column;overflow:hidden}
+.modal.open{pointer-events:auto}.modal.open .ov{opacity:1}.modal.open .sheet{transform:none}
+.sheet header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line)}
+.sheet header h2{font-family:Anton,sans-serif;font-size:26px;text-transform:uppercase}
+.sheet .body{flex:1;overflow:auto;padding:22px 24px;display:flex;flex-direction:column;gap:16px}
+.sheet footer{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.x{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);font-size:16px;transition:transform .4s var(--ease)}.x:hover{transform:rotate(90deg)}
+.preview{border-radius:18px;height:230px;display:grid;place-items:center;position:relative;overflow:hidden;transition:background .4s}
+.preview .pv{width:180px;transition:transform .5s var(--ease)}
+.preview .pv svg{width:100%;filter:drop-shadow(0 14px 14px #17111c40)}
+.preview .pv.photo{width:100%;height:100%}.preview .pv img{width:100%;height:100%;object-fit:cover}
+.pvsw{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:#fff;padding:6px 10px;border-radius:999px;box-shadow:var(--shadow)}
+.pvsw button{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px #0002}
+.pvsw button.on{box-shadow:inset 0 0 0 1px #0002,0 0 0 2px #fff,0 0 0 3.5px var(--text)}
+.sec{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 14px;border:1px solid var(--line);border-radius:10px;font-weight:600;transition:all .2s}
+.chip.on{background:var(--text);color:#fff;border-color:var(--text)}
+.crow{display:grid;grid-template-columns:46px 1fr 38px;gap:8px;align-items:center;animation:in .35s var(--ease)}
+.crow input[type=color]{width:46px;height:42px;border:1px solid var(--line);border-radius:10px;padding:3px;background:#fff;cursor:pointer}
+.crow .rm{height:42px;border:1px solid var(--line);border-radius:10px}
+.crow .rm:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.addc{align-self:flex-start;padding:9px 14px;border:1px dashed var(--muted);border-radius:10px;font-weight:600;color:var(--muted)}
+.addc:hover{color:var(--text);border-color:var(--text)}
+.check{display:flex;align-items:center;gap:10px;font-weight:600}
+.seg{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}
+.seg label{flex:1;text-align:center;padding:10px;border-radius:9px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .25s}
+.seg input{display:none}
+.seg label:has(input:checked){background:#fff;color:var(--text);box-shadow:0 2px 8px #17111c18}
+.photo-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--muted)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,140px);background:var(--text);color:#fff;padding:13px 22px;border-radius:999px;font-weight:600;transition:transform .5s var(--ease);z-index:80}
+.toast.show{transform:translate(-50%,0)}
+.demo-note{font-size:12px;color:#a99bb3;padding:10px;line-height:1.5}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:14px}
+  .side small,.side .grow,.demo-note{display:none}
+  .side nav{display:flex;gap:4px;overflow-x:auto;width:100%;order:3}
+  .side nav button{width:auto;white-space:nowrap}
+  .side .store{margin-left:auto;padding:8px 12px}
+  main{padding:20px 16px 60px}
+  .tr{grid-template-columns:56px 1fr auto;row-gap:6px}
+  .tr.head{display:none}
+  .tr .c-col,.tr .c-stock{display:none}
+  .tr .acts{grid-column:1/-1;justify-content:flex-start}
+  .otr{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo" id="brand">Neon Coast</div>
+    <small>ADMIN</small>
+    <nav id="tabs">
+      <button data-t="products" class="on">👕 Products</button>
+      <button data-t="offers">🏷️ Offers</button>
+      <button data-t="orders">📦 Orders</button>
+      <button data-t="settings">⚙️ Settings</button>
+    </nav>
+    <div class="grow"></div>
+    <p class="demo-note">Demo mode: data is saved in this browser only. A live store needs a real backend and login.</p>
+    <a class="store" href="index.html" target="_blank">View store ↗</a>
+  </aside>
+  <main>
+    <div class="top"><h1 id="title">Products</h1><button class="btn grad" id="newBtn">+ Add product</button></div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div class="modal" id="modal"><div class="ov" data-act="close"></div><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileIn" accept="image/*" hidden>
+<input type="file" id="importIn" accept="application/json" hidden>
+
+<script src="data.js"></script>
+<script>
+const { esc, fmt, art } = NC;
+const $ = id => document.getElementById(id);
+const SIZES = ["XS","S","M","L","XL","XXL","OS"];
+let tab = "products", q = "", draft = null, pci = 0;
+let tt; const toast = m => { $("toast").textContent = m; $("toast").classList.add("show"); clearTimeout(tt); tt = setTimeout(() => $("toast").classList.remove("show"), 2200); };
+const cats = () => [...new Set(NC.products().map(p => p.cat))];
+
+/* ---------- navigation ---------- */
+const TITLES = { products: "Products", offers: "Offers", orders: "Orders", settings: "Settings" };
+function go(t) {
+  tab = t;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  $("title").textContent = TITLES[t];
+  $("newBtn").style.display = t === "products" || t === "offers" ? "" : "none";
+  $("newBtn").textContent = t === "products" ? "+ Add product" : "+ New offer";
+  render();
+}
+function render() {
+  $("brand").textContent = NC.settings().brand;
+  $("view").innerHTML = `<div class="view">${{ products: vProducts, offers: vOffers, orders: vOrders, settings: vSettings }[tab]()}</div>`;
+}
+$("tabs").onclick = e => { const b = e.target.closest("button"); if (b) go(b.dataset.t); };
+$("newBtn").onclick = () => tab === "products" ? editProduct() : editOffer();
+
+/* ---------- products ---------- */
+function vProducts() {
+  const P = NC.products(), live = NC.offers().filter(o => NC.status(o) === "live").length;
+  return `<div class="stats">
+    <div class="stat"><small>Products</small><b>${P.length}</b></div>
+    <div class="stat"><small>Visible in store</small><b>${P.filter(p => p.active).length}</b></div>
+    <div class="stat ${P.some(p => p.stock <= 5) ? "warn" : ""}"><small>Low / out of stock</small><b>${P.filter(p => p.stock <= 5).length}</b></div>
+    <div class="stat"><small>Live offers</small><b>${live}</b></div></div>
+    <div class="toolbar"><input id="search" placeholder="Search products…" value="${esc(q)}"></div>
+    <div class="table" id="ptable">${productRows()}</div>`;
+}
+function productRows() {
+  const list = NC.products().filter(p => (p.name + " " + p.cat).toLowerCase().includes(q.toLowerCase()));
+  if (!list.length) return `<div class="empty">No products found.</div>`;
+  return `<div class="tr head"><span></span><span>Product</span><span class="c-col">Colours</span><span>Price</span><span class="c-stock">Stock</span><span>Live</span><span></span></div>` +
+    list.map(p => `<div class="tr ${p.active ? "" : "off"}">
+      <div class="thumb" style="background:${esc(p.bg)}">${art(p)}</div>
+      <div><b>${esc(p.name)}</b><small>${esc(p.cat)} · ${esc(p.type)}${p.badge ? " · " + esc(p.badge) : ""}</small></div>
+      <div class="dots c-col">${p.colors.map(c => `<i style="background:${esc(c.hex)}" title="${esc(c.name)}"></i>`).join("")}</div>
+      <div><b>${fmt(p.price)}</b>${p.compareAt > p.price ? `<s>${fmt(p.compareAt)}</s>` : ""}</div>
+      <div class="c-stock ${p.stock <= 0 ? "out" : p.stock <= 5 ? "low" : ""}">${p.stock <= 0 ? "Sold out" : p.stock + " in stock"}</div>
+      <label class="switch"><input type="checkbox" data-tog="p" data-id="${p.id}" ${p.active ? "checked" : ""}><span></span></label>
+      <div class="acts"><button data-act="editP" data-id="${p.id}">Edit</button><button data-act="dupP" data-id="${p.id}">Duplicate</button><button class="del" data-act="delP" data-id="${p.id}">Delete</button></div>
+    </div>`).join("");
+}
+
+function editProduct(id) {
+  const p = id && NC.products().find(x => x.id === id);
+  draft = p ? structuredClone(p) : { id: NC.uid(), name: "", cat: cats()[0] || "Tees", type: "tee", price: 1499, compareAt: 0, stock: 25, badge: "NEW",
+    sizes: ["S","M","L","XL"], colors: [{ name: "Black", hex: "#17111c" }], design: { sun: true, text: "NEON COAST", textColor: "#ff3d9a" }, bg: "#ffe1ee", image: "", active: true };
+  draft._new = !p; pci = 0;
+  openSheet(`<header><h2>${p ? "Edit product" : "New product"}</h2><button class="x" data-act="close">✕</button></header>
+  <div class="body" id="pform">
+    <div class="preview" id="pvbox"><div class="pv" id="pv"></div><div class="pvsw" id="pvsw"></div></div>
+    <div class="sec">Details</div>
+    <label class="f">Name<input class="field" name="name" value="${esc(draft.name)}" placeholder="e.g. Vice Nights Tee"></label>
+    <div class="grid2">
+      <label class="f">Category<input class="field" name="cat" list="catlist" value="${esc(draft.cat)}"><datalist id="catlist">${cats().map(c => `<option value="${esc(c)}">`).join("")}</datalist></label>
+      <label class="f">Garment<select class="field" name="type">${NC.types.map(t => `<option ${t === draft.type ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+    </div>
+    <div class="grid2">
+      <label class="f">Price (₹)<input class="field" name="price" type="number" min="0" value="${draft.price}"></label>
+      <label class="f">Compare-at price (₹) <em>Shown struck-through. 0 = none</em><input class="field" name="compareAt" type="number" min="0" value="${draft.compareAt}"></label>
+    </div>
+    <div class="grid2">
+      <label class="f">Stock<input class="field" name="stock" type="number" min="0" value="${draft.stock}"></label>
+      <label class="f">Badge <em>e.g. NEW, LIMITED (optional)</em><input class="field" name="badge" value="${esc(draft.badge)}"></label>
+    </div>
+    <div class="sec">Sizes</div>
+    <div class="chips" id="chips">${SIZES.map(s => `<button type="button" class="chip ${draft.sizes.includes(s) ? "on" : ""}" data-s="${s}">${s}</button>`).join("")}</div>
+    <div class="sec">Colours</div>
+    <div id="crows" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button type="button" class="addc" data-act="addColor">+ Add colour</button>
+    <div class="sec">Artwork</div>
+    <div class="photo-row"><button type="button" class="btn ghost" data-act="photo">Upload product photo</button>
+      <button type="button" class="btn ghost" data-act="rmPhoto" id="rmPhoto" ${draft.image ? "" : "hidden"}>Remove photo</button></div>
+    <p class="hint">A photo replaces the drawn mockup. Without one, the garment is drawn in each colour with your print below.</p>
+    <label class="f">Print text <em>Use | for a new line</em><input class="field" name="text" value="${esc(draft.design.text)}"></label>
+    <div class="grid2">
+      <label class="f">Print colour<input class="field" name="textColor" type="color" value="${esc(draft.design.textColor)}" style="height:44px;padding:4px"></label>
+      <label class="f">Card background<input class="field" name="bg" type="color" value="${esc(draft.bg)}" style="height:44px;padding:4px"></label>
+    </div>
+    <label class="check"><input type="checkbox" name="sun" ${draft.design.sun ? "checked" : ""}> Sunset graphic</label>
+    <label class="check"><input type="checkbox" name="active" ${draft.active ? "checked" : ""}> Visible in store</label>
+  </div>
+  <footer><button class="btn ghost" data-act="close">Cancel</button><button class="btn grad" data-act="saveP">${p ? "Save changes" : "Add product"}</button></footer>`);
+  renderColors(); refreshPreview();
+}
+function renderColors() {
+  $("crows").innerHTML = draft.colors.map((c, i) => `<div class="crow"><input type="color" value="${esc(c.hex)}"><input class="field" type="text" value="${esc(c.name)}" placeholder="Colour name">
+    <button type="button" class="rm" data-act="rmColor" data-i="${i}" title="Remove">✕</button></div>`).join("");
+}
+function readProduct() {
+  const f = $("pform"), v = n => f.querySelector(`[name="${n}"]`);
+  Object.assign(draft, {
+    name: v("name").value.trim(), cat: v("cat").value.trim() || "Other", type: v("type").value,
+    price: Math.max(0, +v("price").value || 0), compareAt: Math.max(0, +v("compareAt").value || 0), stock: Math.max(0, +v("stock").value | 0),
+    badge: v("badge").value.trim().toUpperCase(), bg: v("bg").value, active: v("active").checked,
+    design: { sun: v("sun").checked, text: v("text").value, textColor: v("textColor").value },
+    sizes: [...f.querySelectorAll(".chip.on")].map(c => c.dataset.s),
+    colors: [...f.querySelectorAll(".crow")].map(r => ({ hex: r.querySelector("[type=color]").value, name: r.querySelector("[type=text]").value.trim() || "Colour" })),
+  });
+}
+function refreshPreview() {
+  if (pci >= draft.colors.length) pci = 0;
+  $("pvbox").style.background = `radial-gradient(circle at 50% 45%,${draft.bg},#fff 80%)`;
+  $("pv").className = "pv" + (draft.image ? " photo" : "");
+  $("pv").innerHTML = art(draft, draft.colors[pci]?.hex);
+  $("pvsw").style.display = draft.colors.length > 1 && !draft.image ? "" : "none";
+  $("pvsw").innerHTML = draft.colors.map((c, i) => `<button type="button" data-act="pvc" data-i="${i}" class="${i === pci ? "on" : ""}" style="background:${esc(c.hex)}" title="${esc(c.name)}"></button>`).join("");
+  $("rmPhoto").hidden = !draft.image;
+}
+function saveProduct() {
+  readProduct();
+  if (!draft.name) return toast("Give the product a name");
+  if (!draft.price) return toast("Set a price");
+  if (!draft.colors.length) return toast("Add at least one colour");
+  if (!draft.sizes.length) return toast("Pick at least one size");
+  const isNew = draft._new; delete draft._new;
+  const P = NC.products(), i = P.findIndex(p => p.id === draft.id);
+  isNew || i < 0 ? P.unshift(draft) : (P[i] = draft);
+  if (!NC.saveProducts(P)) { draft._new = isNew; return toast("Storage full — try a smaller photo"); }
+  closeSheet(); render(); toast(isNew ? "Product added ✓" : "Changes saved ✓");
+}
+/* photo upload, resized so it fits in browser storage */
+$("fileIn").onchange = e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const s = Math.min(1, 700 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+    c.width = img.width * s; c.height = img.height * s; c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url); readProduct(); draft.image = c.toDataURL("image/jpeg", .82); refreshPreview();
+  };
+  img.src = url;
+};
+
+/* ---------- offers ---------- */
+function vOffers() {
+  const O = NC.offers();
+  if (!O.length) return `<div class="table"><div class="empty">No offers yet. Create one to run a sale or a coupon code.</div></div>`;
+  return `<div class="offers">${O.map(o => { const s = NC.status(o); return `<div class="offer">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><h3>${esc(o.title)}</h3><span class="st ${s}">${s}</span></div>
+    <div class="meta">${NC.describe(o)}<br>${o.kind === "code" ? `Code <span class="code">${esc(o.code)}</span>` : "Applied automatically"}${o.banner ? " · in banner" : ""}<br>
+      ${o.start || o.end ? `${o.start || "now"} → ${o.end || "no end"}` : "No end date"}</div>
+    <div class="row"><label class="switch"><input type="checkbox" data-tog="o" data-id="${o.id}" ${o.active ? "checked" : ""}><span></span></label>
+      <div class="acts"><button data-act="editO" data-id="${o.id}">Edit</button><button class="del" data-act="delO" data-id="${o.id}">Delete</button></div></div>
+  </div>`; }).join("")}</div>`;
+}
+function editOffer(id) {
+  const o = id && NC.offers().find(x => x.id === id);
+  const d = o || { id: NC.uid(), title: "", kind: "auto", code: "", type: "percent", value: 10, scope: "all", min: 0, start: "", end: "", active: true, banner: true };
+  openSheet(`<header><h2>${o ? "Edit offer" : "New offer"}</h2><button class="x" data-act="close">✕</button></header>
+  <div class="body" id="oform" data-id="${d.id}" data-new="${o ? "" : 1}">
+    <label class="f">Offer name <em>Shown to shoppers in the cart and banner</em><input class="field" name="title" value="${esc(d.title)}" placeholder="e.g. Weekend sale: 15% off"></label>
+    <div class="sec">How it applies</div>
+    <div class="seg"><label><input type="radio" name="kind" value="auto" ${d.kind === "auto" ? "checked" : ""}>Automatic</label><label><input type="radio" name="kind" value="code" ${d.kind === "code" ? "checked" : ""}>Coupon code</label></div>
+    <label class="f" id="codeF">Coupon code<input class="field" name="code" value="${esc(d.code)}" placeholder="e.g. VICE15" style="text-transform:uppercase"></label>
+    <div class="sec">Discount</div>
+    <div class="seg"><label><input type="radio" name="type" value="percent" ${d.type === "percent" ? "checked" : ""}>% off</label><label><input type="radio" name="type" value="flat" ${d.type === "flat" ? "checked" : ""}>₹ off</label></div>
+    <div class="grid2">
+      <label class="f">Amount<input class="field" name="value" type="number" min="0" value="${d.value}"></label>
+      <label class="f">Applies to<select class="field" name="scope"><option value="all">All products</option>${cats().map(c => `<option ${c === d.scope ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+    </div>
+    <label class="f">Minimum order (₹) <em>0 = no minimum</em><input class="field" name="min" type="number" min="0" value="${d.min}"></label>
+    <div class="sec">Schedule</div>
+    <div class="grid2"><label class="f">Starts <em>blank = now</em><input class="field" name="start" type="date" value="${d.start}"></label>
+      <label class="f">Ends <em>blank = never</em><input class="field" name="end" type="date" value="${d.end}"></label></div>
+    <label class="check"><input type="checkbox" name="banner" ${d.banner ? "checked" : ""}> Show in the store's scrolling banner</label>
+    <label class="check"><input type="checkbox" name="active" ${d.active ? "checked" : ""}> Active</label>
+    <p class="hint">Shoppers get the best automatic offer, plus one coupon code on top.</p>
+  </div>
+  <footer><button class="btn ghost" data-act="close">Cancel</button><button class="btn grad" data-act="saveO">${o ? "Save offer" : "Create offer"}</button></footer>`);
+  syncKind();
+}
+function syncKind() { const f = $("oform"); $("codeF").style.display = f.querySelector("[name=kind]:checked").value === "code" ? "" : "none"; }
+function saveOffer() {
+  const f = $("oform"), v = n => f.querySelector(`[name="${n}"]`);
+  const o = { id: f.dataset.id, title: v("title").value.trim(), kind: f.querySelector("[name=kind]:checked").value, code: v("code").value.trim().toUpperCase().replace(/\s+/g, ""),
+    type: f.querySelector("[name=type]:checked").value, value: Math.max(0, +v("value").value || 0), scope: v("scope").value, min: Math.max(0, +v("min").value || 0),
+    start: v("start").value, end: v("end").value, banner: v("banner").checked, active: v("active").checked };
+  if (!o.title) return toast("Give the offer a name");
+  if (!o.value) return toast("Set a discount amount");
+  if (o.type === "percent" && o.value > 90) return toast("Max 90% off");
+  if (o.kind === "code" && !o.code) return toast("Enter a coupon code");
+  if (o.start && o.end && o.end < o.start) return toast("End date is before start date");
+  const O = NC.offers();
+  if (o.kind === "code" && O.some(x => x.id !== o.id && x.kind === "code" && x.code === o.code)) return toast("That code already exists");
+  const i = O.findIndex(x => x.id === o.id); i < 0 ? O.unshift(o) : (O[i] = o);
+  NC.saveOffers(O); closeSheet(); render(); toast(i < 0 ? "Offer created ✓" : "Offer saved ✓");
+}
+
+/* ---------- orders ---------- */
+function vOrders() {
+  const R = NC.orders(), rev = R.reduce((a, o) => a + o.total, 0), disc = R.reduce((a, o) => a + o.discount, 0);
+  const sold = {}; R.forEach(o => o.items.forEach(i => sold[i.name] = (sold[i.name] || 0) + i.qty));
+  const top = Object.entries(sold).sort((a, b) => b[1] - a[1])[0];
+  return `<div class="stats">
+    <div class="stat"><small>Revenue</small><b>${fmt(rev)}</b></div>
+    <div class="stat"><small>Orders</small><b>${R.length}</b></div>
+    <div class="stat"><small>Avg. order</small><b>${fmt(R.length ? rev / R.length : 0)}</b></div>
+    <div class="stat"><small>Discounts given</small><b>${fmt(disc)}</b></div>
+    <div class="stat"><small>Top seller</small><b style="font-size:16px">${top ? esc(top[0]) + " ×" + top[1] : "—"}</b></div></div>
+  <div class="table">${R.length ? R.map(o => `<div class="otr">
+    <b>${esc(o.id)}</b><span style="color:var(--muted)">${new Date(o.date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span>
+    <span>${o.items.map(i => `${i.qty}× ${esc(i.name)} <small style="color:var(--muted)">(${esc(i.color ? i.color + ", " : "")}${esc(i.size)})</small>`).join("<br>")}</span>
+    <span>${o.code ? `<span class="code">${esc(o.code)}</span>` : o.discount ? `<small style="color:var(--muted)">auto offer</small>` : ""}${o.discount ? `<br><small style="color:var(--teal)">−${fmt(o.discount)}</small>` : ""}</span>
+    <b style="text-align:right">${fmt(o.total)}</b></div>`).join("") : `<div class="empty">No orders yet. Place a test order from the store and it shows up here.</div>`}</div>
+  ${R.length ? `<div class="btns"><button class="btn ghost" data-act="clearOrders">Clear orders</button></div>` : ""}`;
+}
+
+/* ---------- settings ---------- */
+function vSettings() {
+  const S = NC.settings();
+  return `<div class="panel"><h3>Store</h3>
+    <label class="f">Brand name<input class="field" id="sBrand" value="${esc(S.brand)}"></label>
+    <div class="grid2" style="margin-top:14px">
+      <label class="f">Free shipping over (₹)<input class="field" id="sFree" type="number" min="0" value="${S.freeShipMin}"></label>
+      <label class="f">Shipping fee (₹)<input class="field" id="sFee" type="number" min="0" value="${S.shipFee}"></label></div>
+    <div class="btns"><button class="btn grad" data-act="saveS">Save settings</button></div></div>
+  <div class="panel"><h3>Data</h3><p class="hint">Back up your products, offers and orders, or move them to another browser.</p>
+    <div class="btns"><button class="btn ghost" data-act="export">Export JSON</button><button class="btn ghost" data-act="import">Import JSON</button>
+    <button class="btn danger" data-act="reset">Reset demo data</button></div></div>`;
+}
+$("importIn").onchange = e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  f.text().then(t => { const d = JSON.parse(t);
+    if (!Array.isArray(d.products) || !Array.isArray(d.offers)) throw 0;
+    NC.saveProducts(d.products); NC.saveOffers(d.offers); NC.saveOrders(d.orders || []); if (d.settings) NC.saveSettings(d.settings);
+    render(); toast("Data imported ✓");
+  }).catch(() => toast("That file isn't a valid export"));
+};
+
+/* ---------- sheet ---------- */
+function openSheet(html) { $("sheet").innerHTML = html; $("modal").classList.add("open"); setTimeout(() => $("sheet").querySelector("input")?.focus({ preventScroll: true }), 350); }
+function closeSheet() { $("modal").classList.remove("open"); }
+addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const chip = e.target.closest(".chip");
+  if (chip) { chip.classList.toggle("on"); return; }
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const id = b.dataset.id, a = b.dataset.act;
+  if (a === "close") closeSheet();
+  else if (a === "editP") editProduct(id);
+  else if (a === "dupP") { const P = NC.products(), p = P.find(x => x.id === id); const c = { ...structuredClone(p), id: NC.uid(), name: p.name + " (copy)", active: false };
+    P.splice(P.indexOf(p) + 1, 0, c); NC.saveProducts(P) ? (render(), toast("Duplicated — hidden until you turn it on")) : toast("Storage full"); }
+  else if (a === "delP") { const p = NC.products().find(x => x.id === id); if (confirm(`Delete "${p.name}"? This can't be undone.`)) { NC.saveProducts(NC.products().filter(x => x.id !== id)); render(); toast("Product deleted"); } }
+  else if (a === "saveP") saveProduct();
+  else if (a === "addColor") { readProduct(); draft.colors.push({ name: "", hex: "#ffffff" }); renderColors(); pci = draft.colors.length - 1; refreshPreview(); $("crows").lastElementChild.querySelector("[type=text]").focus(); }
+  else if (a === "rmColor") { readProduct(); draft.colors.splice(+b.dataset.i, 1); renderColors(); refreshPreview(); }
+  else if (a === "pvc") { pci = +b.dataset.i; refreshPreview(); }
+  else if (a === "photo") $("fileIn").click();
+  else if (a === "rmPhoto") { readProduct(); draft.image = ""; refreshPreview(); }
+  else if (a === "editO") editOffer(id);
+  else if (a === "saveO") saveOffer();
+  else if (a === "delO") { const o = NC.offers().find(x => x.id === id); if (confirm(`Delete offer "${o.title}"?`)) { NC.saveOffers(NC.offers().filter(x => x.id !== id)); render(); toast("Offer deleted"); } }
+  else if (a === "clearOrders") { if (confirm("Delete all orders? This can't be undone.")) { NC.saveOrders([]); render(); } }
+  else if (a === "saveS") { NC.saveSettings({ brand: $("sBrand").value.trim() || "My Store", freeShipMin: Math.max(0, +$("sFree").value || 0), shipFee: Math.max(0, +$("sFee").value || 0) }); render(); toast("Settings saved ✓"); }
+  else if (a === "export") { const blob = new Blob([JSON.stringify({ products: NC.products(), offers: NC.offers(), orders: NC.orders(), settings: NC.settings() }, null, 2)], { type: "application/json" });
+    const l = document.createElement("a"); l.href = URL.createObjectURL(blob); l.download = "store-data.json"; l.click(); URL.revokeObjectURL(l.href); }
+  else if (a === "import") $("importIn").click();
+  else if (a === "reset") { if (confirm("Reset all products, offers, orders and settings to the demo data?")) { NC.reset(); render(); toast("Demo data restored"); } }
+});
+document.addEventListener("change", e => {
+  const t = e.target.closest("[data-tog]");
+  if (t) {
+    if (t.dataset.tog === "p") { const P = NC.products(); P.find(p => p.id === t.dataset.id).active = t.checked; NC.saveProducts(P); t.closest(".tr").classList.toggle("off", !t.checked); toast(t.checked ? "Now visible in store" : "Hidden from store"); }
+    else { const O = NC.offers(); O.find(o => o.id === t.dataset.id).active = t.checked; NC.saveOffers(O); render(); toast(t.checked ? "Offer activated" : "Offer paused"); }
+  }
+  if (e.target.name === "kind") syncKind();
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "search") { q = e.target.value; $("ptable").innerHTML = productRows(); }
+  if (draft && e.target.closest("#pform")) { readProduct(); refreshPreview(); }
+});
+document.addEventListener("click", e => { if (draft && e.target.closest("#pform .chip")) readProduct(); });
+addEventListener("storage", () => render());
+
+go("products");
+</script>
+</body>
+</html>
